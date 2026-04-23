@@ -1,0 +1,659 @@
+{
+  "name": "AI leads and Cold Email Generator from Website",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        64
+      ],
+      "id": "fa60afc3-1055-43de-a4d3-836bb3aa46dc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ujzN7UMuK6B6PyRU",
+          "name": "AIQUS Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Leads",
+        "formDescription": "Leads Data",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Company"
+            },
+            {
+              "fieldLabel": "Location"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        304,
+        -160
+      ],
+      "id": "6166ae50-5946-44af-b25b-b0238a4a4358",
+      "name": "On form submission",
+      "webhookId": "271f5c59-3288-4e2f-b8c3-63eb847d53dc"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        608,
+        64
+      ],
+      "id": "6dba14b9-ee76-492e-af16-264c170aa536",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ujzN7UMuK6B6PyRU",
+          "name": "AIQUS Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        64
+      ],
+      "id": "5827913a-3f83-4475-ba67-a06ea103fa73",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ujzN7UMuK6B6PyRU",
+          "name": "AIQUS Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=company : {{ $json.Company }}\nLocatjion: {{ $json.Location }}",
+        "options": {
+          "systemMessage": "You are a lead generation and business discovery AI agent.\n\nYour task is to find companies based on a given business type and location, and return structured data containing their names and website links.\n\n## INPUT\nYou will receive:\n- Company Type (e.g., \"web design agency\", \"real estate firm\", \"fitness center\")\n- Location (e.g., \"Mumbai\", \"Berlin\", \"New York\")\n\n## OBJECTIVE\nSearch the internet and identify relevant companies that match the given type within the specified location.\n\n## STRICT INSTRUCTIONS\n\n1. You MUST use available browsing/search tools to find real companies.\n2. Focus ONLY on companies that:\n   - Match the given company type\n   - Are located in the specified location (or clearly serve that area)\n\n3. For each company, extract:\n   - Company Name\n   - Official Website URL\n\n4. Prioritize:\n   - Official company websites (not directories)\n   - Active and legitimate businesses\n   - Companies with clear branding and services\n\n5. Avoid:\n   - Listing platforms (e.g., Justdial, Yelp, Clutch) unless needed for discovery\n   - Duplicate companies\n   - Broken or invalid websites\n\n6. If a company does NOT have a website:\n   - Skip it\n\n7. Collect at least 40 –50 companies (if available)\n\n## OUTPUT FORMAT (STRICT JSON)\n\n{\n  \"location\": \"\",\n  \"company_type\": \"\",\n  \"results\": [\n    {\n      \"company_name\": \"\",\n      \"website\": \"\"\n    }\n  ]\n}\n\n## ADDITIONAL RULES\n- Do NOT hallucinate companies or websites\n- Only return verifiable businesses\n- Keep output clean and structured\n- No explanations, only JSON"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        528,
+        -160
+      ],
+      "id": "791d090b-b554-410d-8b88-68438c7c5532",
+      "name": "Companies list generator"
+    },
+    {
+      "parameters": {
+        "jsCode": "  // Get raw output\nconst rawOutput = $json.output;\n\n// Clean markdown (```json ... ```)\nconst cleaned = rawOutput\n  .replace(/```json/g, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (error) {\n  return [{ json: { error: \"Invalid JSON format\" } }];\n}\n\n// Ensure results exist\nif (!parsed.results || !Array.isArray(parsed.results)) {\n  return [{ json: { error: \"No results found\" } }];\n}\n\n// Map all companies\nreturn parsed.results.map(company => {\n  return {\n    json: {\n      company_name: company.company_name || null,\n      website: company.website || null\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -160
+      ],
+      "id": "ab210522-b44f-44d0-902e-7c34b294d04a",
+      "name": "Company details extractor"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8",
+          "mode": "list",
+          "cachedResultName": "linked in AIQUS Automation post ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1120023785,
+          "mode": "list",
+          "cachedResultName": "leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8/edit#gid=1120023785"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company Name": "={{ $json.company_name }}",
+            "Website": "={{ $json.website }}",
+            "status": "no",
+            "location": "={{ $('On form submission').item.json.Location }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Services",
+              "displayName": "Services",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1104,
+        -160
+      ],
+      "id": "02d2fab3-a503-4e3f-82c9-81b743b81a91",
+      "name": "Adding details in the sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rM5akQi8aIOYRA94",
+          "name": "Aiqus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8",
+          "mode": "list",
+          "cachedResultName": "linked in AIQUS Automation post ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1120023785,
+          "mode": "list",
+          "cachedResultName": "leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8/edit#gid=1120023785"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "no"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1328,
+        -160
+      ],
+      "id": "59607a11-7f76-4da2-ab34-bc4afb70662c",
+      "name": "Getting the deatils",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rM5akQi8aIOYRA94",
+          "name": "Aiqus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=website link :  {{ $json.Website }}",
+        "options": {
+          "systemMessage": "You are a website intelligence extraction agent.\n\nYour task is to analyze a given website URL, understand the business, and extract key information including contact details.\n\n## INPUT\nYou will receive:\n- Website URL\n\n## OBJECTIVE\nVisit the website (via provided scraped content), analyze it, and return structured business insights along with any available email address.\n\n## STRICT INSTRUCTIONS\n\n1. You DO NOT browse the internet yourself.\n   You ONLY use the provided website content.\n\n2. Carefully analyze the content and extract:\n\n   A. Company Overview\n   - What the company does\n   - Main services or products\n   - Target audience (if inferable)\n\n   B. Key Sections (if present)\n   - Hero / headline message\n   - Services summary\n   - About section insights\n\n   C. Contact Information\n   - Extract ALL email addresses found\n   - Prioritize:\n     1. Business email (e.g., info@, hello@, contact@)\n     2. Personal/founder email (if available)\n   - Ignore fake/demo emails\n\n3. Email Extraction Rules\n   - Scan entire content thoroughly\n   - Look for:\n     - \"mailto:\" links\n     - Footer/contact sections\n     - About page references\n   - If multiple emails exist, return the most relevant one\n\n4. If NO email is found:\n   - Return: \"email_not_found\"\n\n5. Keep extracted insights concise and meaningful\n   - Avoid dumping raw text\n   - Summarize intelligently\n\n## OUTPUT FORMAT (STRICT JSON)\n\n{\n  \"company_name\": \"\",\n  \"website_url\": \"\",\n  \"company_summary\": \"\",\n  \"services\": [],\n  \"target_audience\": \"\",\n  \"key_message\": \"\",\n  \"email\": \"\"\n}\n\n## ADDITIONAL RULES\n- Do NOT hallucinate missing data\n- Do NOT invent email addresses\n- If unsure, leave fields empty (\"\")\n- Keep output clean and structured\n- No explanations, only JSON output"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1552,
+        -160
+      ],
+      "id": "cf30a8e2-4b64-49fd-a412-65d43483e1e8",
+      "name": "Companies contact details scrapper"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all incoming items\nconst items = $input.all();\n\nconst results = [];\n\nfor (const item of items) {\n  let rawOutput = item.json.output;\n\n  if (!rawOutput) continue;\n\n  // Clean markdown (```json ... ```)\n  const cleaned = rawOutput\n    .replace(/```json/g, \"\")\n    .replace(/```/g, \"\")\n    .trim();\n\n  let parsed;\n\n  try {\n    parsed = JSON.parse(cleaned);\n  } catch (error) {\n    continue; // skip invalid JSON\n  }\n\n  const companyName = parsed.company_name || null;\n\n  let email = parsed.email || null;\n\n  // Handle \"email_not_found\"\n  if (email === \"email_not_found\" || email === \"\") {\n    email = null;\n  }\n\n  results.push({\n    json: {\n      company_name: companyName,\n      email: email\n    }\n  });\n}\n\n// Return all cleaned results\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        -160
+      ],
+      "id": "d96cb166-8acd-4b28-b5e3-6ee749a9fd15",
+      "name": "Emails  extractor"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8",
+          "mode": "list",
+          "cachedResultName": "linked in AIQUS Automation post ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1120023785,
+          "mode": "list",
+          "cachedResultName": "leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8/edit#gid=1120023785"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company Name": "={{ $json.company_name }}",
+            "Email": "={{ $json.email }}"
+          },
+          "matchingColumns": [
+            "Company Name"
+          ],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Services",
+              "displayName": "Services",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2128,
+        -160
+      ],
+      "id": "c179e3ac-8e5c-4e2f-b68f-e469544b5abf",
+      "name": "Emails adding in the sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rM5akQi8aIOYRA94",
+          "name": "Aiqus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8",
+          "mode": "list",
+          "cachedResultName": "linked in AIQUS Automation post ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1120023785,
+          "mode": "list",
+          "cachedResultName": "leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqvkAopVovR4bubH-Ve1Y6vEUZoAocjUS8IhFSR3WY8/edit#gid=1120023785"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "no"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        -160
+      ],
+      "id": "f48919f5-89f4-4d2a-ba40-745c1610b80b",
+      "name": "Getting details from the sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rM5akQi8aIOYRA94",
+          "name": "Aiqus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Company name :{{ $json['Company Name'] }}\ndetails : Web development company\nlocation : {{ $json.location }}",
+        "options": {
+          "systemMessage": "You are an expert B2B cold email copywriter specializing in high-conversion outreach for AI automation services.\n\nYour task is to generate a highly engaging cold email BODY in clean HTML format for collaboration.\n\n## INPUT\nYou will receive:\n- Company Name\n- Company Details (what they do, services, positioning)\n\n## OBJECTIVE\nWrite a personalized cold email proposing collaboration where we offer AI automation services and support them in executing projects.\n\n---\n\n## OUTPUT FORMAT (STRICT)\n\n- Return ONLY the email body\n- Output MUST be valid HTML\n- Do NOT include <html>, <head>, or <body> tags\n- Use only simple tags: <p>, <br>, <strong>\n- No subject line\n- No explanations\n\n---\n\n## EMAIL STRUCTURE (Follow but adapt naturally)\n\n1. STRONG HOOK\n   - Start with a personalized observation about the company\n   - Show you understand what they do\n   - Avoid generic openings\n\n2. CONTEXT BRIDGE\n   - Connect their work to AI automation opportunities\n\n3. VALUE PROPOSITION\n   - Explain how we can help:\n     - automate workflows\n     - increase delivery speed\n     - improve margins\n     - handle backend execution\n\n4. COLLABORATION ANGLE\n   - Position as a partnership, not a sale\n   - Example intent:\n     - support your team on projects\n     - handle automation side\n\n5. SOFT CTA\n   - Suggest a simple next step (quick chat, exchange ideas)\n\n---\n\n## WRITING RULES\n\n- Length: 120–180 words\n- Tone: conversational, human, modern\n- Short paragraphs (2–3 lines max)\n- Avoid buzzwords and fluff\n- No placeholders like [Name]\n- Make it feel personally written\n\n---\n\n## HTML RULES\n\n- Wrap each paragraph in <p> tags\n- Use <strong> only for subtle emphasis (max 1–2 times)\n- Use <br> only if needed for spacing\n- Keep formatting clean and minimal\n- No inline styles, no CSS\n\n---\n\n## CONTEXT\n\nWe offer:\n- AI automation systems\n- Workflow automation\n- Support in delivering automation-based projects\n\nGoal:\n- Collaborate and help them scale execution\n\n---\n\n## FINAL INSTRUCTION\n\nReturn ONLY the HTML email body.\nNo text outside HTML."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2576,
+        -160
+      ],
+      "id": "113d775f-6b42-451d-b448-1f12283d5ba6",
+      "name": "Cold email generator"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sajid@aiqusautomation.com",
+        "toEmail": "shaiksajid3007@gmail.com",
+        "subject": "hi",
+        "html": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2928,
+        -160
+      ],
+      "id": "46b43735-17fe-4632-b396-334a5d53df07",
+      "name": "Send an Email using Business email",
+      "webhookId": "d20cc5de-43d1-4d7e-99ba-b0047c48fb3d",
+      "credentials": {
+        "smtp": {
+          "id": "B8iRk0YzURrqFaDh",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Companies contact details scrapper",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Companies list generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Companies list generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Cold email generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Companies list generator": {
+      "main": [
+        [
+          {
+            "node": "Company details extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company details extractor": {
+      "main": [
+        [
+          {
+            "node": "Adding details in the sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adding details in the sheet": {
+      "main": [
+        [
+          {
+            "node": "Getting the deatils",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Getting the deatils": {
+      "main": [
+        [
+          {
+            "node": "Companies contact details scrapper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Companies contact details scrapper": {
+      "main": [
+        [
+          {
+            "node": "Emails  extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emails  extractor": {
+      "main": [
+        [
+          {
+            "node": "Emails adding in the sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emails adding in the sheet": {
+      "main": [
+        [
+          {
+            "node": "Getting details from the sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Getting details from the sheet": {
+      "main": [
+        [
+          {
+            "node": "Cold email generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cold email generator": {
+      "main": [
+        [
+          {
+            "node": "Send an Email using Business email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "RY9svgowuJGYLxCv",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "c2b86ead-5639-46e3-a2a2-1eeb8440fd84",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2b3dee14923a31b66d7e98b61429de508ada10f478554bf89fb2d494829dab8e"
+  },
+  "id": "lJyxhzzlgCIjK6iI",
+  "tags": []
+}
